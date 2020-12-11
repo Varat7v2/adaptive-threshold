@@ -32,7 +32,7 @@ print('Recusion Limit: {}'.format(sys.getrecursionlimit()))
 FACE_RECOGNITION = 'FACENET'
 # FACE_RECOGNITION = 'DLIB'
 ADD_PERSONS = False
-SRC_PATH = 'data/data_athelets_test2'
+SRC_PATH = 'data/test'
 source = 'image'
 GALLERY_FVECTORS = 1
 IMAGE_NUM_LIMIT = GALLERY_FVECTORS + 1
@@ -880,8 +880,8 @@ def main():
 
     fig5, ax51 = plt.subplots(num='adaptive-metrics-comparision')
     ax51.scatter(people_count, adaptive_thresholds, s=100, label='adaptive_threshold', color='blue')
-    ax51.plot(people_count, cross_means, label='cross-mean', linestyle='dashed', color='deeppink', linewidth=3)
-    ax51.plot(people_count, auto_means, label='auto-mean', linestyle='dashed', color='navy', linewidth=3)
+    ax51.plot(people_count, cross_means, label='cross-mean', linestyle='dotted', color='magenta', linewidth=3)
+    ax51.plot(people_count, auto_means, label='auto-mean', linestyle='dotted', color='indigo', linewidth=3)
     ax51.fill_between(people_count, cross_means, auto_means, color='deepskyblue', alpha=0.1)
     ax51.set_ylabel('Threshold', fontsize=20)
     ax51.set_xlabel('No. of Identities', fontsize=20)
@@ -902,8 +902,8 @@ def main():
     ax61.scatter(people_count, fixed_thresholds_1, s=100, label='fixed@0.3', color='darkorange', marker='s')
     ax61.scatter(people_count, fixed_thresholds_2, s=100, label='fixed@0.5', color='green', marker='*')
     ax61.scatter(people_count, fixed_thresholds_3, s=100, label='fixed@0.7', color='red', marker='^')
-    ax61.plot(people_count, cross_means, label='cross-mean', linestyle='dashed', color='magenta', linewidth=3)
-    ax61.plot(people_count, auto_means, label='auto-mean', linestyle='dashed', color='navy', linewidth=3)
+    ax61.plot(people_count, cross_means, label='cross-mean', linestyle='dotted', color='magenta', linewidth=3)
+    ax61.plot(people_count, auto_means, label='auto-mean', linestyle='dotted', color='indigo', linewidth=3)
     ax61.fill_between(people_count, cross_means, auto_means, color='deepskyblue', alpha=0.1)
     ax61.set_ylabel('Threshold', fontsize=20)
     ax61.set_xlabel('No. of Identities', fontsize=20)
