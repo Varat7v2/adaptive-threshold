@@ -32,17 +32,17 @@ print('Recusion Limit: {}'.format(sys.getrecursionlimit()))
 FACE_RECOGNITION = 'FACENET'
 # FACE_RECOGNITION = 'DLIB'
 ADD_PERSONS = False
-SRC_PATH = 'data/test'
+SRC_PATH = 'data/data_athelets'
 source = 'image'
-GALLERY_FVECTORS = 1
-IMAGE_NUM_LIMIT = GALLERY_FVECTORS + 1
-# IMAGE_NUM_LIMIT = 20
-OUTPUT_CSV_PATH = 'data/results_csv'
+GALLERY_FVECTORS = 5
+# IMAGE_NUM_LIMIT = GALLERY_FVECTORS + 1
+IMAGE_NUM_LIMIT = 2
+OUTPUT_CSV_PATH = 'data/results_csv_v5_2'
 
 if not os.path.exists(OUTPUT_CSV_PATH):
     os.makedirs(OUTPUT_CSV_PATH)
 
-PATH_TO_CKPT_FACE = 'models/myssd_mobilenet_v2_face.pb'
+PATH_TO_CKPT_FACE = 'models/face_ssd_512x512.pb'
 PATH_TO_CKPT_FACENET_128D = 'models/facenet-20170511-185253.pb'
 PATH_TO_CKPT_FACENET_512D_9905 = 'models/facenet-20180408-102900-CASIA-WebFace.pb'
 PATH_TO_CKPT_FACENET_512D_9967 = 'models/faenet-20180402-114759-VGGFace2.pb'
@@ -370,6 +370,8 @@ def find_threshold_stats(mydirs):
         plt.scatter(np.arange(len(auto_similarity)), auto_similarity, s=10, label='auto_similarity', color='deepskyblue')
         plt.plot(np.arange(len(auto_similarity)), [auto_avg]*len(auto_similarity), label='auto_average', linewidth=3, color='green')
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=2)
+        plt.xlabel('No. of similarity pairing')
+        plt.ylabel('Cosine similarity')
         # plt.legend(loc="best")
         # auto_dist_1 = np.asarray(auto_dist_1)
 
@@ -377,6 +379,8 @@ def find_threshold_stats(mydirs):
         plt.scatter(np.arange(len(cross_similarity)), cross_similarity, s=10, label='cross_similarity', color='coral')
         plt.plot(np.arange(len(cross_similarity)), [cross_avg]*len(cross_similarity), label='cross_average', linewidth=3, color='green')
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=2)
+        plt.xlabel('No. of similarity pairing')
+        plt.ylabel('Cosine similarity')
         # plt.legend(loc="best")
         # cross_dist_1 = np.asarray(cross_dist_1)
 
@@ -385,13 +389,15 @@ def find_threshold_stats(mydirs):
         
         # axs.hist(auto_similarity, bins = 10)
         # axs.hist(auto_similarity, bins = 10)
-
-        # bins = np.linspace(-1, 2, 100)
-        # plt.figure('Auto similarity histogram')
-        # plt.hist(auto_similarity, bins, alpha=0.5, label='auto_similarity')
-        # # plt.figure('Cross similarity histogram')
-        # plt.hist(cross_similarity, bins, alpha=0.7, label='cross_similarity')
-        # plt.legend(loc='upper right')
+        # fig32 = plt.figure('Histogram')
+        bins = np.linspace(-1, 2, 100)
+        plt.figure('Histogram')
+        plt.hist(auto_similarity, bins, alpha=0.5, label='auto_similarity', color='deepskyblue')
+        # plt.figure('Cross similarity histogram')
+        plt.hist(cross_similarity, bins, alpha=0.7, label='cross_similarity', color='coral')
+        plt.xlabel('Cosine similarity')
+        plt.ylabel('No. of occurances')
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=2)
 
         # cross_dist_1 = np.asarray(cross_dist_1)
 
@@ -622,9 +628,9 @@ def main():
     fixed_thresholds_3, fixed_precisions_3, fixed_recalls_3, fixed_f1scores_3 = list(), list(), list(), list()
 
     TPRs_adaptive, FPRs_adaptive = [0,1], [0,1]
-    TPRs_fixed_1, FPRs_fixed_1 = [0,0,0,0,0,1,1,1,1,1], [0,0,0,0,0,1,1,1,1,1]
-    TPRs_fixed_2, FPRs_fixed_2 = [0,0,0,0,0,1,1,1,1,1], [0,0,0,0,0,1,1,1,1,1]
-    TPRs_fixed_3, FPRs_fixed_3 = [0,0,0,0,0,1,1,1,1,1], [0,0,0,0,0,1,1,1,1,1]
+    TPRs_fixed_1, FPRs_fixed_1   = [0,1], [0,1]
+    TPRs_fixed_2, FPRs_fixed_2   = [0,1], [0,1]
+    TPRs_fixed_3, FPRs_fixed_3   = [0,1], [0,1]
 
     loop_count = 0
     dir_count = 0
@@ -694,6 +700,7 @@ def main():
             adaptive_precision, adaptive_recall, adaptive_f1score, adaptive_accuracy, adaptive_tpr, adaptive_fpr = evaluate_model(
                 query_dict, gallery_dict, adaptive_threshold, P_same, P_diff)
 
+            adaptive_threshold_prev = adaptive_threshold
             adaptive_precision_prev = adaptive_precision
             adaptive_recall_prev = adaptive_recall
             adaptive_f1score_prev = adaptive_f1score
@@ -705,7 +712,8 @@ def main():
             # if False:
                 print('optimization going on ...')
                 myfunc = lambda x: -obj_func(x)
-                res = minimize_scalar(myfunc, bounds=(cross_mean, auto_mean), method='bounded')
+                # res = minimize_scalar(myfunc, bounds=(cross_mean, auto_mean), method='bounded')
+                res = minimize_scalar(myfunc, bounds=(0, 1), method='bounded')
                 threshold_updated = res.x
                 adaptive_precision, adaptive_recall, adaptive_f1score, adaptive_accuracy, adaptive_tpr, adaptive_fpr = evaluate_model(
                     query_dict, gallery_dict, threshold_updated, P_same, P_diff)
@@ -716,7 +724,7 @@ def main():
                     opt_threshold = threshold_updated
                     # print('cross mean={}, auto mean={}, opt_threshold={}'.format(cross_mean, auto_mean, opt_threshold))
                 else:
-                    opt_threshold = adaptive_threshold
+                    opt_threshold = adaptive_threshold_prev
                     adaptive_precision = adaptive_precision_prev
                     adaptive_recall = adaptive_recall_prev
                     adaptive_f1score = adaptive_f1score_prev
@@ -737,6 +745,12 @@ def main():
             if adaptive_fpr>0 and adaptive_fpr<1:
                 TPRs_adaptive.append(adaptive_tpr)
                 FPRs_adaptive.append(adaptive_fpr)
+            elif adaptive_fpr == 0:
+                TPRs_adaptive.append(0)
+                FPRs_adaptive.append(0)
+            elif adaptive_fpr == 1:
+                TPRs_adaptive.append(1)
+                FPRs_adaptive.append(1)
 
             # FIXED THRESHOLD
             # fixed threshold --> lower bound (1)
@@ -745,10 +759,16 @@ def main():
             fixed_precisions_1.append(precision_fixed_1)
             fixed_recalls_1.append(recall_fixed_1)
             fixed_f1scores_1.append(f1score_fixed_1)
+            fixed_thresholds_1.append(fixed_threshold_min)
             if fpr_fixed_1>0 and fpr_fixed_1<1:
                 TPRs_fixed_1.append(tpr_fixed_1)
                 FPRs_fixed_1.append(fpr_fixed_1)
-            fixed_thresholds_1.append(fixed_threshold_min)
+            elif fpr_fixed_1 == 0:
+                TPRs_fixed_1.append(0)
+                FPRs_fixed_1.append(0)
+            elif fpr_fixed_1 == 1:
+                TPRs_fixed_1.append(1)
+                FPRs_fixed_1.append(1)
             if  f1score_fixed_1 >= 0.9:
                 pfixed_count_1 += 1
             
@@ -761,6 +781,12 @@ def main():
             if fpr_fixed_2>0 and fpr_fixed_2<1:
                 TPRs_fixed_2.append(tpr_fixed_2)
                 FPRs_fixed_2.append(fpr_fixed_2)
+            if fpr_fixed_2 == 0:
+                TPRs_fixed_2.append(0)
+                FPRs_fixed_2.append(0)
+            if fpr_fixed_2 == 1:
+                TPRs_fixed_2.append(1)
+                FPRs_fixed_2.append(1)
             fixed_thresholds_2.append(fixed_threshold_default)
             if  f1score_fixed_2 >= 0.9:
                 pfixed_count_2 += 1
@@ -774,6 +800,12 @@ def main():
             if fpr_fixed_3>0 and fpr_fixed_3<1:
                 TPRs_fixed_3.append(tpr_fixed_3)
                 FPRs_fixed_3.append(fpr_fixed_3)
+            if fpr_fixed_3 == 0:
+                TPRs_fixed_3.append(0)
+                FPRs_fixed_3.append(0)
+            if fpr_fixed_3 == 1:
+                TPRs_fixed_3.append(1)
+                FPRs_fixed_3.append(1)
             fixed_thresholds_3.append(fixed_threshold_max)
             if  f1score_fixed_3 >= 0.9:
                 pfixed_count_3 += 1
@@ -815,10 +847,10 @@ def main():
     print('Percentage of precision@fixed_threshold=0.5 >= 0.9: {}%'.format(pfixed_count_2/(ptotal+1e-7)*100))
     print('Percentage of precision@fixed_threshold=0.7 >= 0.9: {}%'.format(pfixed_count_3/(ptotal+1e-7)*100))
     print('**************MODEL ACCURACY*********************')
-    print('Percentage of precision@adaptive_threshold >= 0.9: {}%'.format(adaptive_accuracy*100))
-    print('Percentage of precision@fixed_threshold=0.3 >= 0.9: {}%'.format(accuracy_fixed1*100))
-    print('Percentage of precision@fixed_threshold=0.5 >= 0.9: {}%'.format(accuracy_fixed1*100))
-    print('Percentage of precision@fixed_threshold=0.7 >= 0.9: {}%'.format(accuracy_fixed1*100))
+    print('Percentage of accuracy@adaptive_threshold: {}%'.format(adaptive_accuracy*100))
+    print('Percentage of accuracy@fixed_threshold=0.3: {}%'.format(accuracy_fixed1*100))
+    print('Percentage of accuracy@fixed_threshold=0.5: {}%'.format(accuracy_fixed1*100))
+    print('Percentage of accuracy@fixed_threshold=0.7: {}%'.format(accuracy_fixed1*100))
     print('Number of pople taken into account: {}'.format(num_people))
     people_count = np.arange(len(adaptive_thresholds))+2
     # print('People count: {}'.format(people_count))
