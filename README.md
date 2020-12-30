@@ -1,4 +1,7 @@
-This project is based on the paper: [Adaptive Threshold for Better Performance of the Recognition and Re-identification Models](https://arxiv.org/abs/2012.14305)
+This project is based on the paper: [Adaptive Threshold for Better Performance of the Recognition and Re-identification Models](https://arxiv.org/abs/2012.14305).
+
+Please cite this paper: 
+> Bohara, Bharat. “Adaptive Threshold for Better Performance of the Recognition and Re-identification Models.” (2020).
 
 This project can be tested on [Labeled Faces in the Wild (LFW)](http://vis-www.cs.umass.edu/lfw/), but because of the larger identities, its computationally time consuming. Hence, for testing purpose, I have prepared my own dataset of [top highly paid athletes listed on Forbes magazine (2018)](https://www.forbes.com/sites/kurtbadenhausen/2018/06/13/full-list-the-worlds-highest-paid-athletes-2018/?sh=47e592177d9f) using [online-dataset-generator](https://github.com/Varat7v2/online-dataset-maker). The Athletes dataset can be downloaded from [here](). Similarly, the model for face-detection and facenet can be downloaded from [here](https://drive.google.com/drive/folders/1okfoM_pxEUupdjYBzy7PyL0Y-0Swlym_?usp=sharing).
 
@@ -19,3 +22,6 @@ Finally, we can run the [main file](https://github.com/Varat7v2/adaptive-thresho
 ```
 python adaptive-threshold-main.py
 ```
+Since the project was completed within a short period of time, lot of code optimization for faster inference is needed.
+
+If you have any doubts, please inbox me.
