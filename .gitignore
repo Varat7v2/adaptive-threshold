@@ -7,4 +7,4 @@ data/data_athelets_test3
 data/results_csv
 models/*
 old_files/*
-____pycache__
+__pycache__
