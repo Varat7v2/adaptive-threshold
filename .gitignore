@@ -2,5 +2,9 @@ data/data_athelets
 data/lfw
 data/data_athelets_test
 data/test
+data/data_athelets_test2
+data/data_athelets_test3
+data/results_csv
 models/*
 old_files/*
+____pycache__

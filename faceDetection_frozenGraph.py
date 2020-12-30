@@ -1,7 +1,9 @@
 import sys
 import time
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import cv2
 
 # from utils import label_map_util
