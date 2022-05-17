@@ -71,7 +71,7 @@ def obj_func(x):
                 for g_embedding in g_values:
                     known_names.append(g_key)
                     # dist.append(euclidean_distance(dict_encoding, current_encoding))
-                    dist.append(cosine_similarity(q_embedding, g_embedding))
+                    dist.append(aThreshold.cosine_similarity(q_embedding, g_embedding))
             
             # dist_updated.append(max(dist))
             max_dist = max(dist)
