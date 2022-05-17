@@ -2,22 +2,16 @@
 # Flag to decide to store image directly form webcam
 ADD_PERSONS = False
 
-PLOT_FLAG = False
-
 # Dataset chosen for calculating the adaptive threshold
-# SRC_PATH = 'data/data_athelets'
-SRC_PATH = 'data/lfw'
-PLOT_PATH = 'plots'
+SRC_PATH = 'data/data_athelets'
+# SRC_PATH = 'data/new_data'
 
 # Type of source: Either IMAGE or WEBCAM
 SOURCE = 'image'
-IMG_WIDTH = 1200
-IMG_HEIGHT = 900
 
 # Limiting the number of images per identity
 #  Considering identity only with a single image does not help
-IMAGE_NUM_MIN = 70 #4
-IMAGE_NUM_MAX = 150 #60
+IMAGE_NUM_LIMIT = 2
 
 # Limit to measure model accuracy constrained to f1-score/precision greater than equal to 80%
 METRIC_BOUND = 0.8
@@ -27,13 +21,14 @@ METRIC_BOUND = 0.8
 GSIZE=1
 
 #number of folders to select
-FOLDER_PERCENT=1.0
+FOLDER_PERCENT=0.5
 
 #number of images to choose from selected folders
-IMAGE_PERCENT=1.0
+IMAGE_PERCENT=0.5
 
 # Naming the folder in which all the results output will be stored. It can be named anything
 DATA_VERSION=1
+
 
 # Face recognition model
 FACE_RECOGNITION = 'FACENET'
@@ -48,5 +43,3 @@ PATH_TO_CKPT_FACENET_128D = 'models/facenet-20170511-185253.pb'
 # Facenet models for extracting 512-dimensional facial feature vectors
 PATH_TO_CKPT_FACENET_512D_9905 = 'models/facenet-20180408-102900-CASIA-WebFace.pb'
 PATH_TO_CKPT_FACENET_512D_9967 = 'models/faenet-20180402-114759-VGGFace2.pb'
-
-## GRAPH CONFIGURATION

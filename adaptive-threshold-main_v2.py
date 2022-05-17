@@ -12,9 +12,6 @@ import seaborn as sns
 import scipy.stats
 from sympy import S, symbols, printing
 
-# import pyautogui
-# os.environ['DISPLAY']=':0'
-
 from facenet import facenet, detect_face
 from scipy.optimize import minimize, minimize_scalar
 
@@ -31,7 +28,7 @@ tf.disable_v2_behavior()
 
 import adaptive_config as myconfig
 
-font = {'size': 12}
+font = {'size': 10}
 plt.rc('font', **font)
 
 linearReg = LinearRegression()
@@ -40,23 +37,12 @@ sys.setrecursionlimit(10**7)
 print('Recusion Limit: {}'.format(sys.getrecursionlimit()))
 
 
-# myconfig.ADD_PERSONS = False
-# myconfig.SRC_PATH = 'data/data_athelets_test3'
-# myconfig.SOURCE = 'image'
-# # myconfig.IMAGE_NUM_LIMIT = GALLERY_FVECTORS + 1
-# myconfig.IMAGE_NUM_LIMIT = 1
-# myconfig.METRIC_BOUND = 0.8
-
 OUTPUT_CSV_PATH = 'results_csv_{}_{}'.format(myconfig.GSIZE, myconfig.DATA_VERSION)
 GALLERY_FVECTORS = myconfig.GSIZE
 
 if not os.path.exists(OUTPUT_CSV_PATH):
     os.makedirs(OUTPUT_CSV_PATH)
 
-# myconfig.PATH_TO_CKPT_FACE = 'models/face_ssd_512x512.pb'
-# myconfig.PATH_TO_CKPT_FACENET_128D = 'models/facenet-20170511-185253.pb'
-# myconfig.PATH_TO_CKPT_FACENET_512D_9905 = 'models/facenet-20180408-102900-CASIA-WebFace.pb'
-# myconfig.PATH_TO_CKPT_FACENET_512D_9967 = 'models/faenet-20180402-114759-VGGFace2.pb'
 
 tDetector = TensoflowFaceDector(myconfig.PATH_TO_CKPT_FACE)
 myfacenet = FACENET_EMBEDDINGS(myconfig.PATH_TO_CKPT_FACENET_512D_9967)
@@ -213,7 +199,7 @@ def find_threshold_stats(mydirs):
 
                 count += 1
 
-            # print()
+
             if len(faces_embeddings) > 0:
                 # faces_embeddings.append(get_facial_embeddings(cropped_faces))
                 mydict['face_id'] = dir_name
@@ -379,6 +365,7 @@ def find_threshold_stats(mydirs):
         #              kde_kws={'linewidth': 4})
         
         # fig1.subplots_adjust(bottom=0.2)
+        fig1.tight_layout()
         fig1.savefig(myconfig.PLOT_PATH+'/histogram-gaussian-curve.pdf', bbox_inches='tight', dpi=300)
         # sys.exit(0)
 
@@ -390,6 +377,7 @@ def find_threshold_stats(mydirs):
         plt.ylabel('Cosine similarity')
         # plt.legend(loc="best")
         # auto_dist_1 = np.asarray(auto_dist_1)
+        fig2.tight_layout()
         fig2.savefig(myconfig.PLOT_PATH+'/auto-similarity distribution.pdf', bbox_inches='tight', dpi=300)
 
         fig3 = plt.figure(num='cross-similarity distribution')
@@ -400,6 +388,7 @@ def find_threshold_stats(mydirs):
         plt.ylabel('Cosine similarity')
         # plt.legend(loc="best")
         # cross_dist_1 = np.asarray(cross_dist_1)
+        fig3.tight_layout()
         fig3.savefig(myconfig.PLOT_PATH+'/cross-similarity distribution.pdf', bbox_inches='tight', dpi=300)
 
         # Creating histogram 
@@ -413,12 +402,12 @@ def find_threshold_stats(mydirs):
         fig10, ax10_1 = plt.subplots(num='Histogram')
         ax10_2 = ax10_1.twinx()
         ax10_2.hist(auto_similarity, bins, alpha=0.7, label='auto_similarity', color='deepskyblue')
-        ax10_2.set_ylabel('Auto-similarity distribution', fontsize=12)
-        ax10_2.set_xlabel('Cosine similarity', fontsize=12)
+        ax10_2.set_ylabel('Auto-similarity distribution', fontsize=10)
+        ax10_2.set_xlabel('Cosine similarity', fontsize=10)
         # plt.figure('Cross similarity histogram')
         ax10_1.hist(cross_similarity, bins, alpha=0.8, label='cross_similarity', color='coral')
-        ax10_1.set_ylabel('Cross-similarity distribution', fontsize=12)
-        ax10_1.set_xlabel('Cosine similarity', fontsize=12)
+        ax10_1.set_ylabel('Cross-similarity distribution', fontsize=10)
+        ax10_1.set_xlabel('Cosine similarity', fontsize=10)
         # plt.xlabel('Cosine similarity')
         # plt.ylabel('No. of occurances')
         # plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=2)
@@ -903,11 +892,12 @@ def main():
     people_count = np.arange(len(adaptive_thresholds))+2
     # print('People count: {}'.format(people_count))
 
+    #### PLOT - ROC CURVE -------------------------------------------------------------------------------
     fig4, ax4 = plt.subplots(num='roc_curve')
-    ax4.scatter(FPRs_adaptive, TPRs_adaptive, s=100, color='blue')
-    ax4.scatter(FPRs_fixed_1, TPRs_fixed_1, s=100, marker='s', color='darkorange')
-    ax4.scatter(FPRs_fixed_2, TPRs_fixed_2, s=100, marker='*', color='green')
-    ax4.scatter(FPRs_fixed_3, TPRs_fixed_3, s=100, marker='^', color='red')
+    ax4.scatter(FPRs_adaptive, TPRs_adaptive, s=50, color='blue')
+    ax4.scatter(FPRs_fixed_1, TPRs_fixed_1, s=50, marker='s', color='darkorange')
+    ax4.scatter(FPRs_fixed_2, TPRs_fixed_2, s=50, marker='*', color='green')
+    ax4.scatter(FPRs_fixed_3, TPRs_fixed_3, s=50, marker='^', color='red')
     ax4.set_ylim([0.0,1.0])
     ax4.set_xlim([0,1])
     # print(len('TPRS_adaptive size={}, FPRs_adaptive size={}'.format(TPRs_adaptive, FPRs_adaptive)))
@@ -963,6 +953,7 @@ def main():
     ax4.set_ylabel('True Positive rate (TPR)', fontsize=12)
     ax4.set_xlabel('False Positive rate (FPR)', fontsize=12)
     ax4.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=4)
+    fig4.tight_layout()
     fig4.savefig(myconfig.PLOT_PATH+'/roc_curve.pdf', bbox_inches='tight', dpi=300)
 
     print('AUC_adaptive:{}'.format(auc_adaptive))
@@ -992,25 +983,28 @@ def main():
     # plt.legend(loc='best')
     # fig1.tight_layout()
 
-    fig5, ax51 = plt.subplots(num='adaptive-metrics-comparision')
-    ax51.scatter(people_count, adaptive_thresholds, s=100, label='adaptive_threshold', color='blue')
-    ax51.plot(people_count, cross_means, label='cross-mean', linestyle='dotted', color='magenta', linewidth=2)
-    ax51.plot(people_count, auto_means, label='auto-mean', linestyle='dotted', color='indigo', linewidth=2)
+
+    # PLOT - ADAPTIVE METRICS COMPARISION -------------------------------------------------------------------
+    fig5, ax51 = plt.subplots(num='adaptive-metrics-comparision', figsize=(9, 5))
+    ax51.scatter(people_count, adaptive_thresholds, s=50, label='adaptive_threshold', color='blue')
+    ax51.plot(people_count, cross_means, label='cross-mean', linestyle='dotted', color='magenta', linewidth=1.5)
+    ax51.plot(people_count, auto_means, label='auto-mean', linestyle='dotted', color='indigo', linewidth=1.5)
     ax51.fill_between(people_count, cross_means, auto_means, color='deepskyblue', alpha=0.1)
-    ax51.set_ylabel('Threshold', fontsize=12)
-    ax51.set_xlabel('No. of Identities', fontsize=12)
+    ax51.set_ylabel('Threshold', fontsize=10)
+    ax51.set_xlabel('No. of Identities', fontsize=10)
     # ax51.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=6)
     ax52 = ax51.twinx()
-    ax52.plot(people_count, adaptive_precisions, label='precision', color='blueviolet', linewidth=2)
-    ax52.plot(people_count, adaptive_recalls, label='recall', color='green', linewidth=2)
-    ax52.plot(people_count, adaptive_f1scores, label='f1-score', color='red', linewidth=2)
-    ax52.set_ylabel('Performance Metrics', fontsize=12)
-    ax52.set_xlabel('No. of Identities', fontsize=12)
+    ax52.plot(people_count, adaptive_precisions, label='precision', color='blueviolet', linewidth=1.5)
+    ax52.plot(people_count, adaptive_recalls, label='recall', color='green', linewidth=1.5)
+    ax52.plot(people_count, adaptive_f1scores, label='f1-score', color='red', linewidth=1.5)
+    ax52.set_ylabel('Performance Metrics', fontsize=10)
+    ax52.set_xlabel('No. of Identities', fontsize=10)
     # ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=6)
     h51, l51 = ax51.get_legend_handles_labels()
     h52, l52 = ax52.get_legend_handles_labels()
     ax51.legend(h51+h52, l51+l52, loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=6)
-    fig5.savefig(myconfig.PLOT_PATH+'/adaptive-metrics-comparision.pdf', bbox_inches='tight', dpi=300)
+    # fig5.tight_layout()
+    fig5.savefig(myconfig.PLOT_PATH+'/adaptive-metrics-comparision.pdf', dpi=300)
 
     fig6, ax61 = plt.subplots(num='comparative-study-threshold-vs-f1score')
     ax61.scatter(people_count, adaptive_thresholds, s=100, label='adaptive', color='blue')

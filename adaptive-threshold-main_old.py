@@ -11,10 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats
 from sympy import S, symbols, printing
-
-# import pyautogui
-# os.environ['DISPLAY']=':0'
-
+from datetime import datetime
 from facenet import facenet, detect_face
 from scipy.optimize import minimize, minimize_scalar
 
@@ -31,7 +28,7 @@ tf.disable_v2_behavior()
 
 import adaptive_config as myconfig
 
-font = {'size': 12}
+font = {'size': 20}
 plt.rc('font', **font)
 
 linearReg = LinearRegression()
@@ -64,7 +61,7 @@ myfacenet = FACENET_EMBEDDINGS(myconfig.PATH_TO_CKPT_FACENET_512D_9967)
 def serialize_dict(dict_, filename):
     mydict = dict()
     # Load the embeddings of known people or check if there are any new people need to add in the list
-    for image in glob.glob('known_persons/*'):
+    for image in glob.glob('my_known_persons/*'):
         name = image.split('/')[-1].split('.')[0]
         image = FR.load_image_file(image)
         encoding = FR.face_encoding(image)[0]
@@ -160,9 +157,9 @@ def detect_crop_face(frame, frame_width, frame_height):
                 if myconfig.FACE_RECOGNITION == 'DLIB':
                     face_encoding = FR.face_encoding(frame, face_locations)
                 if myconfig.FACE_RECOGNITION == 'FACENET':
-                #***********************************************************************************************
                     current_encoding = myfacenet.run(faces_cropped)
 
+                #***********************************************************************************************
                 ### DLIB
                 # # Loop through each face in this frame of video
                 # for (top, right, bottom, left), face_encoding in zip(face_locations, face_encoding):
@@ -195,8 +192,7 @@ def find_threshold_stats(mydirs):
     mydict_list = list()
     # print(mydirs)
     for dir_name in mydirs:
-        images_count = len(list(f for f in glob.glob(os.path.join(myconfig.SRC_PATH, dir_name)+'/*')))
-        if images_count >= myconfig.IMAGE_NUM_MIN and images_count <= myconfig.IMAGE_NUM_MAX:
+        if len(list(f for f in glob.glob(os.path.join(myconfig.SRC_PATH, dir_name)+'/*'))) >= myconfig.IMAGE_NUM_LIMIT:
             cropped_faces = list()
             faces_embeddings = list()
             mydict = dict()
@@ -329,7 +325,7 @@ def find_threshold_stats(mydirs):
 
     if PLOT_FLAG:
         # Density Plot and Histogram of all arrival delays
-        fig1 = plt.figure(num='histogram-gaussian-curve')
+        fig1 = plt.figure('histogram-gaussian-curve')
         ax1 = sns.distplot(auto_similarity, norm_hist=True, kde=True, 
                      bins=int(180/5), color = 'blue', 
                      hist_kws={'edgecolor':'black'},
@@ -350,15 +346,15 @@ def find_threshold_stats(mydirs):
         # auto_ymin = np.min(auto_y)
         # auto_ymax = np.max(auto_y)
         # auto_y = (auto_y-auto_ymin)/(auto_ymax-auto_ymin)
-        ax1.plot(auto_x, auto_y, color='blue', linewidth=2, label='auto_gaussian')
+        ax1.plot(auto_x, auto_y, color='blue', linewidth=3, label='auto_gaussian')
 
         cross_x = np.linspace(cross_min-0.1, cross_max+0.2, 1000)
         cross_y = scipy.stats.norm.pdf(cross_x, cross_mean, cross_std)
         # cross_ymin = np.min(cross_y)
         # cross_ymax = np.max(cross_y)
         # cross_y = (cross_y-cross_ymin)/(cross_ymax-cross_ymin)
-        ax1.plot(cross_x, cross_y, color='red', linewidth=2, label='cross_gaussian')
-        ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=4)
+        ax1.plot(cross_x, cross_y, color='red', linewidth=3, label='cross_gaussian')
+        ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=4)
         # h1, l1 = ax1.get_legend_handles_labels()
         # h2, l2 = ax2.get_legend_handles_labels()
         # ax.legend(h1+h2, l1+l2, loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=6)
@@ -377,30 +373,24 @@ def find_threshold_stats(mydirs):
         #              bins=int(180/5), color = 'green', 
         #              hist_kws={'edgecolor':'black'},
         #              kde_kws={'linewidth': 4})
-        
-        # fig1.subplots_adjust(bottom=0.2)
-        fig1.savefig(myconfig.PLOT_PATH+'/histogram-gaussian-curve.pdf', bbox_inches='tight', dpi=300)
-        # sys.exit(0)
 
-        fig2 = plt.figure(num='auto-similarity distribution')
-        plt.scatter(np.arange(len(auto_similarity)), auto_similarity, s=1, label='auto_similarity', color='deepskyblue')
-        plt.plot(np.arange(len(auto_similarity)), [auto_avg]*len(auto_similarity), label='auto_average', linewidth=1, color='green')
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=2)
+        fig2 = plt.figure('auto-similarity distribution')
+        plt.scatter(np.arange(len(auto_similarity)), auto_similarity, s=10, label='auto_similarity', color='deepskyblue')
+        plt.plot(np.arange(len(auto_similarity)), [auto_avg]*len(auto_similarity), label='auto_average', linewidth=3, color='green')
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=2)
         plt.xlabel('No. of similarity pairing')
         plt.ylabel('Cosine similarity')
         # plt.legend(loc="best")
         # auto_dist_1 = np.asarray(auto_dist_1)
-        fig2.savefig(myconfig.PLOT_PATH+'/auto-similarity distribution.pdf', bbox_inches='tight', dpi=300)
 
-        fig3 = plt.figure(num='cross-similarity distribution')
-        plt.scatter(np.arange(len(cross_similarity)), cross_similarity, s=1, label='cross_similarity', color='coral')
-        plt.plot(np.arange(len(cross_similarity)), [cross_avg]*len(cross_similarity), label='cross_average', linewidth=1, color='green')
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=2)
+        fig3 = plt.figure('cross-similarity distribution')
+        plt.scatter(np.arange(len(cross_similarity)), cross_similarity, s=10, label='cross_similarity', color='coral')
+        plt.plot(np.arange(len(cross_similarity)), [cross_avg]*len(cross_similarity), label='cross_average', linewidth=3, color='green')
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=2)
         plt.xlabel('No. of similarity pairing')
         plt.ylabel('Cosine similarity')
         # plt.legend(loc="best")
         # cross_dist_1 = np.asarray(cross_dist_1)
-        fig3.savefig(myconfig.PLOT_PATH+'/cross-similarity distribution.pdf', bbox_inches='tight', dpi=300)
 
         # Creating histogram 
         # fig, axs = plt.subplots(1, 1, fimyconfig.GSIZE =(10, 7), tight_layout = True) 
@@ -413,19 +403,18 @@ def find_threshold_stats(mydirs):
         fig10, ax10_1 = plt.subplots(num='Histogram')
         ax10_2 = ax10_1.twinx()
         ax10_2.hist(auto_similarity, bins, alpha=0.7, label='auto_similarity', color='deepskyblue')
-        ax10_2.set_ylabel('Auto-similarity distribution', fontsize=12)
-        ax10_2.set_xlabel('Cosine similarity', fontsize=12)
+        ax10_2.set_ylabel('Auto-similarity distribution', fontsize=20)
+        ax10_2.set_xlabel('Cosine similarity', fontsize=20)
         # plt.figure('Cross similarity histogram')
         ax10_1.hist(cross_similarity, bins, alpha=0.8, label='cross_similarity', color='coral')
-        ax10_1.set_ylabel('Cross-similarity distribution', fontsize=12)
-        ax10_1.set_xlabel('Cosine similarity', fontsize=12)
+        ax10_1.set_ylabel('Cross-similarity distribution', fontsize=20)
+        ax10_1.set_xlabel('Cosine similarity', fontsize=20)
         # plt.xlabel('Cosine similarity')
         # plt.ylabel('No. of occurances')
-        # plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=2)
+        # plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=2)
         h10_1, l10_1 = ax10_1.get_legend_handles_labels()
         h10_2, l10_2 = ax10_2.get_legend_handles_labels()
-        ax10_2.legend(h10_1+h10_2, l10_1+l10_2, loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=6)
-        fig10.savefig(myconfig.PLOT_PATH+'/Histogram.pdf', bbox_inches='tight', dpi=300)
+        ax10_2.legend(h10_1+h10_2, l10_1+l10_2, loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=6)
 
         # cross_dist_1 = np.asarray(cross_dist_1)
 
@@ -640,7 +629,6 @@ def myquadeqn(mypoly, x):
     return mypoly[0]*x**2+mypoly[1]*x+mypoly[2]
 
 def main():
-    tstart = time.time()
     global query_dict, gallery_dict, PLOT_FLAG
     query_dict = dict()
     gallery_dict = dict()
@@ -650,15 +638,10 @@ def main():
 
     updated_dirs = list()
     directories = [mydir for mydir in os.listdir(myconfig.SRC_PATH)]
-    FOLDER_COUNT = 0
-    for dir_name in directories:
-        images_count = len(list(f for f in glob.glob(os.path.join(myconfig.SRC_PATH, dir_name)+'/*')))
-        if images_count >= myconfig.IMAGE_NUM_MIN and images_count <= myconfig.IMAGE_NUM_MAX:
-            FOLDER_COUNT += 1
-            updated_dirs.append(dir_name)
-
-    # print('folder count: ', FOLDER_COUNT)
-    # sys.exit(0)
+    start_time = datetime.now()
+    for d in directories:
+        if len(list(f for f in glob.glob(os.path.join(myconfig.SRC_PATH, d)+'/*'))) >= myconfig.IMAGE_NUM_LIMIT:
+            updated_dirs.append(d)
 
     adaptive_precisions, adaptive_recalls, adaptive_f1scores, adaptive_thresholds = list(), list(), list(), list()
     fixed_thresholds_1, fixed_precisions_1, fixed_recalls_1, fixed_f1scores_1 = list(), list(), list(), list()
@@ -920,7 +903,7 @@ def main():
     auc_adaptive = integrate.quad(lambda x: myquadeqn(mypoly, x), 0.0, 1.0)[0]
     # print('AUC: {}'.format(auc))
 
-    ax4.plot(new_FPRs, TPRs_predicted, label='adaptive_threshold', linewidth=2, color='blue')
+    ax4.plot(new_FPRs, TPRs_predicted, label='adaptive_threshold', linewidth=3, color='blue')
 
     # mymodel1 = np.poly1d(np.polyfit(FPRs_fixed_1, TPRs_fixed_1, 2))
     # TPRs_predicted_fixed_1 = mymodel1(new_FPRs)
@@ -938,13 +921,13 @@ def main():
     mymodel1 = np.poly1d(mypoly1)
     TPRs_predicted_fixed_1 = mymodel1(new_FPRs)
     auc_fixed1 = integrate.quad(lambda x: myquadeqn(mypoly1, x), 0.0, 1.0)[0]
-    ax4.plot(new_FPRs, TPRs_predicted_fixed_1, label='fixed_threshold=0.3', linewidth=2, color='darkorange', linestyle='dashed')
+    ax4.plot(new_FPRs, TPRs_predicted_fixed_1, label='fixed_threshold=0.3', linewidth=3, color='darkorange', linestyle='dashed')
 
     mypoly2 = np.polyfit(FPRs_fixed_2, TPRs_fixed_2, 2)
     mymodel2 = np.poly1d(mypoly2)
     TPRs_predicted_fixed_2 = mymodel2(new_FPRs)
     auc_fixed2 = integrate.quad(lambda x: myquadeqn(mypoly2, x), 0.0, 1.0)[0]
-    ax4.plot(new_FPRs, TPRs_predicted_fixed_2, label='fixed_threshold=0.5', linewidth=2, color='green', linestyle='dashed')
+    ax4.plot(new_FPRs, TPRs_predicted_fixed_2, label='fixed_threshold=0.5', linewidth=3, color='green', linestyle='dashed')
 
     # print(FPRs_fixed_3)
     # print(TPRs_fixed_3)
@@ -954,22 +937,24 @@ def main():
     mymodel3 = np.poly1d(mypoly3)
     TPRs_predicted_fixed_3 = mymodel3(new_FPRs)
     auc_fixed3 = integrate.quad(lambda x: myquadeqn(mypoly3, x), 0.0, 1.0)[0]
-    ax4.plot(new_FPRs, TPRs_predicted_fixed_3, label='fixed_threshold=0.7', linewidth=2, color='red', linestyle='dashed')
+    ax4.plot(new_FPRs, TPRs_predicted_fixed_3, label='fixed_threshold=0.7', linewidth=3, color='red', linestyle='dashed')
 
-    ax4.plot([0,1], [0,1], linestyle='solid', linewidth=2, color='black')
+    ax4.plot([0,1], [0,1], linestyle='solid', linewidth=3, color='black')
     # ax4.plot([0,0], [0,1], linestyle='dashed')
     # ax4.plot([0,1], [0,0], linestyle='dashed')
     # plt.legend(loc='best')
-    ax4.set_ylabel('True Positive rate (TPR)', fontsize=12)
-    ax4.set_xlabel('False Positive rate (FPR)', fontsize=12)
-    ax4.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=4)
-    fig4.savefig(myconfig.PLOT_PATH+'/roc_curve.pdf', bbox_inches='tight', dpi=300)
+    # ax4.set_ylabel('True Positive rate (TPR)', fontsize=20)
+    # ax4.set_xlabel('False Positive rate (FPR)', fontsize=20)
+    # ax4.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=4)
 
     print('AUC_adaptive:{}'.format(auc_adaptive))
     print('AUC_fixed1:{}'.format(auc_fixed1))
     print('AUC_fixed2:{}'.format(auc_fixed2))
     print('AUC_fixed3:{}'.format(auc_fixed3))
-
+    end_time = datetime.now()
+    
+    print('Duration: {}'.format(end_time - start_time))
+    
     # fig4, ax4 = plt.subplots()
     # ax4.scatter(adaptive_recalls, adaptive_precisions)
     # ax4.set_ylim([0,1])
@@ -980,6 +965,9 @@ def main():
     # ax4.plot(new_recalls, precisions_predicted)
     # ax4.plot([0,1], [0.5,0.5], linestyle='dashed')
     
+
+
+
 
     # fig1, ax1 = plt.subplots()
     # ax1.scatter(people_count, adaptive_thresholds, s=50, label='adaptive_threshold', color='blue')
@@ -992,115 +980,108 @@ def main():
     # plt.legend(loc='best')
     # fig1.tight_layout()
 
-    fig5, ax51 = plt.subplots(num='adaptive-metrics-comparision')
-    ax51.scatter(people_count, adaptive_thresholds, s=100, label='adaptive_threshold', color='blue')
-    ax51.plot(people_count, cross_means, label='cross-mean', linestyle='dotted', color='magenta', linewidth=2)
-    ax51.plot(people_count, auto_means, label='auto-mean', linestyle='dotted', color='indigo', linewidth=2)
-    ax51.fill_between(people_count, cross_means, auto_means, color='deepskyblue', alpha=0.1)
-    ax51.set_ylabel('Threshold', fontsize=12)
-    ax51.set_xlabel('No. of Identities', fontsize=12)
+    # fig5, ax51 = plt.subplots(num='adaptive-metrics-comparision')
+    # ax51.scatter(people_count, adaptive_thresholds, s=100, label='adaptive_threshold', color='blue')
+    # ax51.plot(people_count, cross_means, label='cross-mean', linestyle='dotted', color='magenta', linewidth=3)
+    # ax51.plot(people_count, auto_means, label='auto-mean', linestyle='dotted', color='indigo', linewidth=3)
+    # ax51.fill_between(people_count, cross_means, auto_means, color='deepskyblue', alpha=0.1)
+    # ax51.set_ylabel('Threshold', fontsize=20)
+    # ax51.set_xlabel('No. of Identities', fontsize=20)
     # ax51.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=6)
-    ax52 = ax51.twinx()
-    ax52.plot(people_count, adaptive_precisions, label='precision', color='blueviolet', linewidth=2)
-    ax52.plot(people_count, adaptive_recalls, label='recall', color='green', linewidth=2)
-    ax52.plot(people_count, adaptive_f1scores, label='f1-score', color='red', linewidth=2)
-    ax52.set_ylabel('Performance Metrics', fontsize=12)
-    ax52.set_xlabel('No. of Identities', fontsize=12)
+    # ax52 = ax51.twinx()
+    # ax52.plot(people_count, adaptive_precisions, label='precision', color='blueviolet', linewidth=3)
+    # ax52.plot(people_count, adaptive_recalls, label='recall', color='green', linewidth=3)
+    # ax52.plot(people_count, adaptive_f1scores, label='f1-score', color='red', linewidth=3)
+    # ax52.set_ylabel('Performance Metrics', fontsize=20)
+    # ax52.set_xlabel('No. of Identities', fontsize=20)
     # ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=6)
-    h51, l51 = ax51.get_legend_handles_labels()
-    h52, l52 = ax52.get_legend_handles_labels()
-    ax51.legend(h51+h52, l51+l52, loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=6)
-    fig5.savefig(myconfig.PLOT_PATH+'/adaptive-metrics-comparision.pdf', bbox_inches='tight', dpi=300)
+    # ----h51, l51 = ax51.get_legend_handles_labels()
+    # h52, l52 = ax52.get_legend_handles_labels()
+    # ax51.legend(h51+h52, l51+l52, loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=6)
 
-    fig6, ax61 = plt.subplots(num='comparative-study-threshold-vs-f1score')
-    ax61.scatter(people_count, adaptive_thresholds, s=100, label='adaptive', color='blue')
-    ax61.scatter(people_count, fixed_thresholds_1, s=100, label='fixed@0.3', color='darkorange', marker='s')
-    ax61.scatter(people_count, fixed_thresholds_2, s=100, label='fixed@0.5', color='green', marker='*')
-    ax61.scatter(people_count, fixed_thresholds_3, s=100, label='fixed@0.7', color='red', marker='^')
-    ax61.plot(people_count, cross_means, label='cross-mean', linestyle='dotted', color='magenta', linewidth=2)
-    ax61.plot(people_count, auto_means, label='auto-mean', linestyle='dotted', color='indigo', linewidth=2)
-    ax61.fill_between(people_count, cross_means, auto_means, color='deepskyblue', alpha=0.1)
-    ax61.set_ylabel('Threshold', fontsize=12)
-    ax61.set_xlabel('No. of Identities', fontsize=12)
-    ax62 = ax61.twinx()
+    # ---fig6, ax61 = plt.subplots(num='comparative-study-threshold-vs-f1score')
+    # ax61.scatter(people_count, adaptive_thresholds, s=100, label='adaptive', color='blue')
+    # ax61.scatter(people_count, fixed_thresholds_1, s=100, label='fixed@0.3', color='darkorange', marker='s')
+    # ax61.scatter(people_count, fixed_thresholds_2, s=100, label='fixed@0.5', color='green', marker='*')
+    # ax61.scatter(people_count, fixed_thresholds_3, s=100, label='fixed@0.7', color='red', marker='^')
+    # ax61.plot(people_count, cross_means, label='cross-mean', linestyle='dotted', color='magenta', linewidth=3)
+    # ax61.plot(people_count, auto_means, label='auto-mean', linestyle='dotted', color='indigo', linewidth=3)
+    # ax61.fill_between(people_count, cross_means, auto_means, color='deepskyblue', alpha=0.1)
+    # ax61.set_ylabel('Threshold', fontsize=20)
+    # ax61.set_xlabel('No. of Identities', fontsize=20)
+    # ax62 = ax61.twinx()
     # ax2.plot(people_count, adaptive_precisions, label='precision@adaptive_threshold', color='green')
     # ax2.plot(people_count, fixed_precisions_1, label='precision@fixed_threshold_1', color='red', linestyle='dashed')
     # ax2.plot(people_count, fixed_precisions_2, label='precision@fixed_threshold_2', color='green', linestyle='dashed')
     # ax2.plot(people_count, fixed_precisions_3, label='precision@fixed_threshold_3', color='blue', linestyle='dashed')
-    ax62.plot(people_count, fixed_f1scores_1, label='f1-score@fixed=0.3',linestyle='dashed', color='darkorange', linewidth=2)
-    ax62.plot(people_count, fixed_f1scores_2, label='f1-score@fixed=0.5', linestyle='dashed', color='green', linewidth=2)
-    ax62.plot(people_count, fixed_f1scores_3, label='f1-score@fixed=0.7', linestyle='dashed', color='red', linewidth=2)
-    ax62.plot(people_count, adaptive_f1scores, label='f1-score@adaptive', linewidth=2, color='blue')
-    ax62.set_ylabel('F1-score', fontsize=12)
-    ax62.set_xlabel('No. of Identities', fontsize=12)
-    xnew = np.linspace(min(people_count), max(people_count), 100)
-    spl_precision = make_interp_spline(people_count, adaptive_precisions)
-    spl_recall = make_interp_spline(people_count, adaptive_recalls)
-    spl_f1score = make_interp_spline(people_count, adaptive_f1scores)
-    precision_new = spl_precision(xnew)
-    recall_new = spl_recall(xnew)
-    f1score_new = spl_f1score(xnew)
-    # plt.legend(loc='best')
+    # -----ax62.plot(people_count, fixed_f1scores_1, label='f1-score@fixed=0.3',linestyle='dashed', color='darkorange', linewidth=3)
+    # ax62.plot(people_count, fixed_f1scores_2, label='f1-score@fixed=0.5', linestyle='dashed', color='green', linewidth=3)
+    # ax62.plot(people_count, fixed_f1scores_3, label='f1-score@fixed=0.7', linestyle='dashed', color='red', linewidth=3)
+    # ax62.plot(people_count, adaptive_f1scores, label='f1-score@adaptive', linewidth=3, color='blue')
+    # ax62.set_ylabel('F1-score', fontsize=20)
+    # ax62.set_xlabel('No. of Identities', fontsize=20)
+    # xnew = np.linspace(min(people_count), max(people_count), 100)
+    # spl_precision = make_interp_spline(people_count, adaptive_precisions)
+    # spl_recall = make_interp_spline(people_count, adaptive_recalls)
+    # spl_f1score = make_interp_spline(people_count, adaptive_f1scores)
+    # precision_new = spl_precision(xnew)
+    # recall_new = spl_recall(xnew)
+    # f1score_new = spl_f1score(xnew)
+    # # plt.legend(loc='best')
     # # fig2.tight_layout()
-    h61, l61 = ax61.get_legend_handles_labels()
-    h62, l62 = ax62.get_legend_handles_labels()
-    ax61.legend(h61+h62, l61+l62, loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=5)
-    fig6.savefig(myconfig.PLOT_PATH+'/comparative-study-threshold-vs-f1score.pdf', bbox_inches='tight', dpi=300)
+    # ----h61, l61 = ax61.get_legend_handles_labels()
+    # h62, l62 = ax62.get_legend_handles_labels()
+    # ax61.legend(h61+h62, l61+l62, loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=5)
 
-    fig7, ax7 = plt.subplots(num='comparative-study-precision')
-    ax7.plot(people_count, adaptive_precisions, label='adaptive_threshold', linewidth=2, color='blue')
-    ax7.plot(people_count, fixed_precisions_1, label='fixed_threshold=0.3', linewidth=2, color='darkorange', linestyle='dashed')
-    ax7.plot(people_count, fixed_precisions_2, label='fixed_threshold=0.5', linewidth=2, color='green', linestyle='dashed')
-    ax7.plot(people_count, fixed_precisions_3, label='fixed_threshold=0.7', linewidth=2, color='red', linestyle='dashed')
-    ax7.set_ylabel('Precision', fontsize=12)
-    ax7.set_xlabel('No. of Identities', fontsize=12)
+    # --fig7, ax7 = plt.subplots(num='comparative-study-precision')
+    # ax7.plot(people_count, adaptive_precisions, label='adaptive_threshold', linewidth=3, color='blue')
+    # ax7.plot(people_count, fixed_precisions_1, label='fixed_threshold=0.3', linewidth=3, color='darkorange', linestyle='dashed')
+    # ax7.plot(people_count, fixed_precisions_2, label='fixed_threshold=0.5', linewidth=3, color='green', linestyle='dashed')
+    # ax7.plot(people_count, fixed_precisions_3, label='fixed_threshold=0.7', linewidth=3, color='red', linestyle='dashed')
+    # ax7.set_ylabel('Precision', fontsize=20)
+    # ax7.set_xlabel('No. of Identities', fontsize=20)
     # ax7.set_title('Comparative study of precision', fontsize=30)
-    ax7.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=4)
+    # ---ax7.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=4)
     # fig6.tight_layout()
-    fig7.savefig(myconfig.PLOT_PATH+'/comparative-study-precision.pdf', bbox_inches='tight', dpi=300)
 
-    fig8, ax8 = plt.subplots(num='comparative-study-recall')
-    ax8.plot(people_count, adaptive_recalls, label='adaptive_threshold', linewidth=2, color='blue')
-    ax8.plot(people_count, fixed_recalls_1, label='fixed_threshold=0.3', linewidth=2, color='darkorange', linestyle='dashed')
-    ax8.plot(people_count, fixed_recalls_2, label='fixed_threshold=0.5', linewidth=2, color='green', linestyle='dashed')
-    ax8.plot(people_count, fixed_recalls_3, label='fixed_threshold=0.7', linewidth=2, color='red', linestyle='dashed')
+    # ---fig8, ax8 = plt.subplots(num='comparative-study-recall')
+    # ax8.plot(people_count, adaptive_recalls, label='adaptive_threshold', linewidth=3, color='blue')
+    # ax8.plot(people_count, fixed_recalls_1, label='fixed_threshold=0.3', linewidth=3, color='darkorange', linestyle='dashed')
+    # ax8.plot(people_count, fixed_recalls_2, label='fixed_threshold=0.5', linewidth=3, color='green', linestyle='dashed')
+    # ax8.plot(people_count, fixed_recalls_3, label='fixed_threshold=0.7', linewidth=3, color='red', linestyle='dashed')
     # plt.legend(loc='upper center')
-    ax8.set_ylabel('Recall', fontsize=12)
-    ax8.set_xlabel('No. of Identities', fontsize=12)
-    ax8.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=4)
-    fig8.savefig(myconfig.PLOT_PATH+'/comparative-study-recall.pdf', bbox_inches='tight', dpi=300)
+    # ---ax8.set_ylabel('Recall', fontsize=20)
+    # ax8.set_xlabel('No. of Identities', fontsize=20)
+    # ax8.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=4)
 
-    fig9, ax9 = plt.subplots(num='comparative-study-f1score')
-    ax9.plot(people_count, adaptive_f1scores, label='adaptive_threshold', linewidth=2, color='blue')
-    ax9.plot(people_count, fixed_f1scores_1, label='fixed_threshold=0.3', linewidth=2, color='darkorange', linestyle='dashed')
-    ax9.plot(people_count, fixed_f1scores_2, label='fixed_threshold=0.5', linewidth=2, color='green', linestyle='dashed')
-    ax9.plot(people_count, fixed_f1scores_3, label='fixed_threshold=0.7', linewidth=2, color='red', linestyle='dashed')
-    ax9.set_ylabel('f1-score', fontsize=12)
-    ax9.set_xlabel('No. of Identities', fontsize=12)
-    # plt.legend(loc='upper center')
-    # plt.title('Comparative study of f1-score')
-    ax9.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12), fancybox=True, shadow=False, ncol=4)
-    fig9.savefig(myconfig.PLOT_PATH+'/comparative-study-f1score.pdf', bbox_inches='tight', dpi=300)
+    # ---fig9, ax9 = plt.subplots(num='comparative-study-f1score')
+    # ax9.plot(people_count, adaptive_f1scores, label='adaptive_threshold', linewidth=3, color='blue')
+    # ax9.plot(people_count, fixed_f1scores_1, label='fixed_threshold=0.3', linewidth=3, color='darkorange', linestyle='dashed')
+    # ax9.plot(people_count, fixed_f1scores_2, label='fixed_threshold=0.5', linewidth=3, color='green', linestyle='dashed')
+    # ax9.plot(people_count, fixed_f1scores_3, label='fixed_threshold=0.7', linewidth=3, color='red', linestyle='dashed')
+    # ax9.set_ylabel('f1-score', fontsize=20)
+    # ax9.set_xlabel('No. of Identities', fontsize=20)
+    # # plt.legend(loc='upper center')
+    # # plt.title('Comparative study of f1-score')
+    # ax9.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=False, ncol=4)
 
-    plt.show()
-    tend = time.time()
-    print('The total processing time:', (tend-tstart)/(60*60), 'hours.')
+    # plt.show()
 
-    # for i, current_encoding, facebox in zip(np.arange(len(query_embeddings)).tolist(), query_embeddings, face_boxes):
-    #     dist_updated = list()
-    #     for j, dict_name, dict_encodings in zip(np.arange(num_of_identities), known_face_names, known_face_encodings):
-    #         dist = list()
-    #         for dict_encoding in dict_encodings:
-    #             # dist.append(euclidean_distance(dict_encoding, current_encoding))
-    #             dist.append(cosine_similarity(dict_encoding, current_encoding))
-    #         # eucliDist_matrix[i][j] = np.min(np.asarray(dist, dtype=np.float32))
-            
-    #         dist_updated.append(max(dist))
+        # for i, current_encoding, facebox in zip(np.arange(len(query_embeddings)).tolist(), query_embeddings, face_boxes):
+        #     dist_updated = list()
+        #     for j, dict_name, dict_encodings in zip(np.arange(num_of_identities), known_face_names, known_face_encodings):
+        #         dist = list()
+        #         for dict_encoding in dict_encodings:
+        #             # dist.append(euclidean_distance(dict_encoding, current_encoding))
+        #             dist.append(cosine_similarity(dict_encoding, current_encoding))
+        #         # eucliDist_matrix[i][j] = np.min(np.asarray(dist, dtype=np.float32))
+                
+        #         dist_updated.append(max(dist))
 
-    #     if max(dist_updated) > 0.7:
-    #         name = known_face_names[np.argmax(dist_updated)]
-    #     else:
-    #         name = 'Unknown'
+        #     if max(dist_updated) > 0.7:
+        #         name = known_face_names[np.argmax(dist_updated)]
+        #     else:
+        #         name = 'Unknown'
 
 if __name__ == '__main__':
     main()
