@@ -123,8 +123,10 @@ def main():
             FOLDER_COUNT += 1
             updated_dirs.append(dir_name)
 
-    # print('folder count: ', FOLDER_COUNT)
-    # sys.exit(0)
+    ## Check the number of identities participating
+    if myconfig.PRINT_IDENTITIES_NUM:
+        print('folder count: ', FOLDER_COUNT)
+        sys.exit(0)
 
     adaptive_precisions, adaptive_recalls, adaptive_f1scores, adaptive_thresholds = list(), list(), list(), list()
     fixed_thresholds_1, fixed_precisions_1, fixed_recalls_1, fixed_f1scores_1 = list(), list(), list(), list()

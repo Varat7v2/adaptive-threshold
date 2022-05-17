@@ -16,8 +16,8 @@ IMG_HEIGHT = 900
 
 # Limiting the number of images per identity
 #  Considering identity only with a single image does not help
-IMAGE_NUM_MIN = 70 #4
-IMAGE_NUM_MAX = 150 #60
+IMAGE_NUM_MIN = 4 #4
+IMAGE_NUM_MAX = 60 #60
 
 # Limit to measure model accuracy constrained to f1-score/precision greater than equal to 80%
 METRIC_BOUND = 0.8
@@ -50,3 +50,7 @@ PATH_TO_CKPT_FACENET_512D_9905 = 'models/facenet-20180408-102900-CASIA-WebFace.p
 PATH_TO_CKPT_FACENET_512D_9967 = 'models/faenet-20180402-114759-VGGFace2.pb'
 
 ## GRAPH CONFIGURATION
+
+
+## OTHERS CONFIGURATION
+PRINT_IDENTITIES_NUM = False
