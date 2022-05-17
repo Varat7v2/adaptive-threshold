@@ -216,7 +216,4 @@ class ADAPTIVE_THRESHOLD:
 	    fpr = fp/(fp+tn+1e-7)
 	    
 	    return precision, recall, f1score, accuracy, tpr, fpr
-
-
-	def myquadeqn(self, mypoly, x):
-	    return mypoly[0]*x**2+mypoly[1]*x+mypoly[2]
+	    

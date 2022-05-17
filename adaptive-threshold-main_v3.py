@@ -102,6 +102,9 @@ def obj_func(x):
     return (tpr-fpr)
     # return f1score
 
+def myquadeqn(mypoly, x):
+    return mypoly[0]*x**2+mypoly[1]*x+mypoly[2]
+
 def main():
     tstart = time.time()
     global query_dict, gallery_dict
